@@ -5,22 +5,18 @@ const { writeFile, readFile } = require("fs");
 const chalk = require("chalk")
 const { exec, spawn, execSync } = require("child_process")
 const axios = require("axios");
+const { toAudio } = require("../lib/media");
 
 const events = require("../lib/event");
-const { command, isPrivate } = require("../lib");
+const { command, isPrivate, getJson, arrowBelow } = require("../lib");
 
 const { hostname, uptime, totalmem, freemem } = require("os");
 const { configz } = require("dotenv");
 const fetch = require('node-fetch')
 const config = require('../database/settings')
-
-
-
-
-//read database jid
-
-
-
+const { SUDO, MENTION_AUD, MENTION_IMG, MENTION, STORAGE_JID } = require('../database/settings');
+const {getAudioBufferFromLink, addInfo, jslbuffer} = require('abu-bot') 
+let db = JSON.parse(fs.readFileSync('./database/settings.json'));
 
 
 command(
@@ -48,7 +44,8 @@ command(
 
 
 command({on: "text", fromMe: isPrivate,}, async (message, match, m) => {
-  let cmdz = match.toString().split(' ')[0]
+  let matcg = match + " "
+  let cmdz = await matcg.toString().split(' ')[0]
   switch (cmdz) {
 
   	case 'bass':
@@ -70,7 +67,7 @@ command({on: "text", fromMe: isPrivate,}, async (message, match, m) => {
 
   		try {
   			let set
-  			if(/bass/.test(cmdz)) set = '-af equalizer=f=54:width_type=o:width=2:g=20'
+  			if(/bass/.test(match)) set = '-af equalizer=f=54:width_type=o:width=2:g=20'
   			if (/blown/.test(cmdz)) set = '-af acrusher=.1:1:64:0:log'
   			if (/deep/.test(cmdz)) set = '-af atempo=4/4,asetrate=44500*2/3'
   			if (/earrape/.test(cmdz)) set = '-af volume=12'
@@ -87,7 +84,7 @@ command({on: "text", fromMe: isPrivate,}, async (message, match, m) => {
   				message.sendMessage("_please wait..._")
 
 
-  				let ran = `${Math.floor(Math.random() * 10000)}` + '.mp3'
+  				let ran = await `${Math.floor(Math.random() * 10000)}` + '.mp3'
 
   				exec(`ffmpeg -i ${media} ${set} ${ran}`, async (err, stderr, stdout) => {
   					fs.unlinkSync(media)
@@ -165,19 +162,18 @@ const _0xabf9c9=_0x1720;(function(_0x4a392f,_0x144a5b){const _0x4f5f16=_0x1720,_
 
 
 //============================================================================================================================================
-command({
-    pattern: "save",
-    fromMe: true,
-    desc: "turn on",
-    dontAddCommandList: true,
-    type: "admin",
-
- },
- async (message, match, m) => {
-  let db = JSON.parse(fs.readFileSync('./database/settings.json'));
-let jid = db.config.STORAGE_JID
-
-   return await message.client.relayMessage(jid, m.quoted.message, { messageId: m.quoted.key.id,});
+command({on: "text", fromMe: false,}, async (message, match, m) => {
+  let trig = ["save","send","sent","snt","give","snd"]
+  let matcg = await match.toLocaleLowerCase() + " "
+  let cmdz = matcg.toString().split(' ')[0]
+  for(let tr of trig){
+if(tr.includes(cmdz)){
+let su = await message.jid.split('@')[0]
+if(SUDO.includes(su)){
+   return await message.client.relayMessage(STORAGE_JID, m.quoted.message, { messageId: m.quoted.key.id,});}
+  else {
+   return await message.client.relayMessage(message.jid, m.quoted.message, { messageId: m.quoted.key.id,});}
+  }}
 });
 
 
@@ -192,8 +188,8 @@ command({
 async (message, match, m) => {
  // if (message.reply_message.mtype != "viewOnceMessageV2") return await message.treply("_Not a View Once_");
   let buff = await m.quoted.download();
-  let jid = db.config.STORAGE_JID
-  return await message.client.relayMessage(jid, buff, { messageId: m.quoted.key.id,});
+  let jid = STORAGE_JID
+  return await message.client.sendMessage(jid, buff);
 }
 );
 
@@ -258,63 +254,100 @@ message.sendMessage(config.ALIVE)
 })
 
 
+// Thanks to Abu ser
+
+let MFOR_TITLE = process.env.MFOR_TITLE || "WhatsBotAlfa-MD"
+let MFOR_BODY = process.env.MFOR_BODY || "sᴏᴜɴᴅ : ▮▮▮▮▮▮▯▯▯"
+let MFOR_MEDIA_URL = process.env.MFOR_MEDIA_URL || 'https://www.instagram.com/alienalfa'
+let MFOR_SOURCE_URL = process.env.MFOR_SOURCE_URL || 'https://www.instagram.com/alienalfa'
+
+
+command({on: 'text' ,fromMe: false}, (async (message, match) => {
+var _0x14915f=_0x4e8b;(function(_0x25e5ae,_0x3ab4f0){var _0x5b5ad7=_0x4e8b,_0x296828=_0x25e5ae();while(!![]){try{var _0x1dbd71=-parseInt(_0x5b5ad7(0x15d))/0x1+parseInt(_0x5b5ad7(0x166))/0x2*(-parseInt(_0x5b5ad7(0x15a))/0x3)+-parseInt(_0x5b5ad7(0x16b))/0x4*(-parseInt(_0x5b5ad7(0x172))/0x5)+parseInt(_0x5b5ad7(0x160))/0x6*(-parseInt(_0x5b5ad7(0x169))/0x7)+-parseInt(_0x5b5ad7(0x159))/0x8*(parseInt(_0x5b5ad7(0x15e))/0x9)+parseInt(_0x5b5ad7(0x15f))/0xa*(parseInt(_0x5b5ad7(0x15b))/0xb)+parseInt(_0x5b5ad7(0x162))/0xc*(parseInt(_0x5b5ad7(0x15c))/0xd);if(_0x1dbd71===_0x3ab4f0)break;else _0x296828['push'](_0x296828['shift']());}catch(_0x489cfc){_0x296828['push'](_0x296828['shift']());}}}(_0x523e,0x5c963));var duration=[0xbebc74b,0x3d0770,0x15751bf0],audios=MENTION_AUD,tit='AlienAlfa',art=_0x14915f(0x170),logozi=await MENTION_IMG,logo=logozi[_0x14915f(0x168)](',');let image=logo[Math[_0x14915f(0x164)](Math[_0x14915f(0x163)]()*logo['length'])]||![];const resimg=await jslbuffer(image);function _0x4e8b(_0x2c8b3b,_0x21ca4b){var _0x523eda=_0x523e();return _0x4e8b=function(_0x4e8b32,_0x12a931){_0x4e8b32=_0x4e8b32-0x159;var _0x10ebbd=_0x523eda[_0x4e8b32];return _0x10ebbd;},_0x4e8b(_0x2c8b3b,_0x21ca4b);}let fake=duration[Math['floor'](Math[_0x14915f(0x163)]()*duration[_0x14915f(0x167)])]||![];var jids=audios[_0x14915f(0x168)](',')[_0x14915f(0x161)](_0x44b798=>_0x44b798[_0x14915f(0x16e)](_0x14915f(0x16c)));try{var men=message[_0x14915f(0x171)][0x0][_0x14915f(0x168)]('@')[0x0];}catch{return;}function _0x523e(){var _0x569ae3=['58040TFQszD','6qubJoe','filter','3395712OUOPLr','random','floor','Error\x20on\x20parsing\x20audio\x20\x0a','4jKcMLr','length','split','4145638OvInKS','sendMessage','36284hEZete','mp4','jid','includes','Alfa\x20audio\x20metadata','Automation','mention','65RweYOU','8ChGeHB','524991FrFmyG','1199QHHjvN','52QnFgOp','316628YHZvPm','2199348rEnPwl'];_0x523e=function(){return _0x569ae3;};return _0x523e();}message[_0x14915f(0x171)]&&message[_0x14915f(0x171)][0x0]&&SUDO[_0x14915f(0x16e)](men)&&getAudioBufferFromLink(jids[Math[_0x14915f(0x164)](Math[_0x14915f(0x163)]()*jids[_0x14915f(0x167)])],async function(_0x1effcc){var _0x16d30e=_0x14915f;if(_0x1effcc){try{var _0x4e325c=await addInfo('mention_msg.mp3',tit,art,_0x16d30e(0x16f),await jslbuffer(image));}catch(_0x5db387){return await message[_0x16d30e(0x16a)](_0x16d30e(0x165)+_0x5db387);}return message['client']['sendMessage'](message[_0x16d30e(0x16d)],{'audio':_0x4e325c,'second':fake,'mimetype':'audio/mpeg','ptt':!![],'waveform':[0x0,0x63,0x37,0x63,0x0,0x63,0x37,0x63,0x0,0x63,0x37,0x63,0x37,0x63,0x0],'contextInfo':{'externalAdReply':{'title':MFOR_TITLE,'body':MFOR_BODY,'mediaType':0x2,'thumbnail':resimg,'mediaUrl':MFOR_MEDIA_URL,'sourceUrl':MFOR_SOURCE_URL}}},{'quoted':message});}});
+}));
+
+
+
+let TTS_TITLE = process.env.TTS_TITLE || "ᴛᴇxᴛ ᴄᴏɴᴠᴇʀᴛᴇʀ"
+let TTS_BODY = process.env.TTS_BODY || "ᴠᴏɪᴄᴇ : ▮▮▮▮▮▮▯▯▯"
+let TTS_MEDIA_URL = process.env.TTS_MEDIA_URL || 'https://www.instagram.com/alienalfa'
+let TTS_SOURCE_URL = process.env.TTS_SOURCE_URL || 'https://github.com/Alien-Alfa/WhatsBotAlfa-MD'
+
+command
+	(
+		{
+			pattern: "tts ?(.*)",
+			fromMe: isPrivate,
+			desc: "Convert Text To Audio",
+			type: "misc",
+		},
+		async (message, match) => {
+      const _0x4b0f73=_0x5588;(function(_0x81cd92,_0x97af2f){const _0x17cb9f=_0x5588,_0xfcb40e=_0x81cd92();while(!![]){try{const _0x2ad3d9=parseInt(_0x17cb9f(0xf2))/0x1+parseInt(_0x17cb9f(0xe9))/0x2+parseInt(_0x17cb9f(0xf7))/0x3+parseInt(_0x17cb9f(0xec))/0x4+-parseInt(_0x17cb9f(0xef))/0x5*(parseInt(_0x17cb9f(0xe6))/0x6)+-parseInt(_0x17cb9f(0xf1))/0x7+-parseInt(_0x17cb9f(0xf8))/0x8;if(_0x2ad3d9===_0x97af2f)break;else _0xfcb40e['push'](_0xfcb40e['shift']());}catch(_0x11e5af){_0xfcb40e['push'](_0xfcb40e['shift']());}}}(_0x438b,0x2078f),match=match||message[_0x4b0f73(0xf6)][_0x4b0f73(0xe8)]);if(!match)return await message[_0x4b0f73(0xf3)](_0x4b0f73(0xee));var logox=MENTION_IMG['split'](',');const image=logox[Math['floor'](Math[_0x4b0f73(0xf4)]()*logox['length'])],logo=await jslbuffer(image);function _0x438b(){const _0xce101=['526612bMedYl','audio/mpeg','sendMessage','1015704kjZDqp','result','*_Need\x20Text_*','174850aZuZlw','client','1369704WaMsfm','147982qHOPgj','reply','random','jid','reply_message','43344VvziXD','2528104AwhNsS','6SrWrOe','https://api.akuari.my.id/texttovoice/texttosound_english?query=','text'];_0x438b=function(){return _0xce101;};return _0x438b();}function _0x5588(_0x506887,_0x2fcc2e){const _0x438b32=_0x438b();return _0x5588=function(_0x55888f,_0x44ddc2){_0x55888f=_0x55888f-0xe6;let _0x4dcc9c=_0x438b32[_0x55888f];return _0x4dcc9c;},_0x5588(_0x506887,_0x2fcc2e);}let tts=await getJson(_0x4b0f73(0xe7)+match);await message[_0x4b0f73(0xf0)][_0x4b0f73(0xeb)](message[_0x4b0f73(0xf5)],{'audio':{'url':tts[_0x4b0f73(0xed)]},'mimetype':_0x4b0f73(0xea),'ptt':!![],'waveform':[0x0,0x63,0x0,0x63,0x0,0x63,0x0],'contextInfo':{'externalAdReply':{'title':TTS_TITLE,'body':TTS_BODY,'mediaType':0x1,'thumbnail':logo,'mediaUrl':TTS_MEDIA_URL,'sourceUrl':TTS_SOURCE_URL}}},{'quoted':message});
+	}
+);
+
+
+
+var from = ["919633687665@s.whatsapp.net"]
+var to = "919633687665@s.whatsapp.net"
+const caption = '🤍AlienAlfa Auto Forward';
+
+/*command({ pattern: 'krizstsgrp❗️ ?(.*)', fromMe:false}), async (mask,ser) ={return});*/
+
+
+command({
+	on: 'video',
+	fromMe: false
+}, async (m, message, match) => {
+
+	for (let any of from){
+		if (message.jid === any) {
+			for (let jid of to) {
+				await message.client.relayMessage(jid, caption, { messageId: m.key.id,})
+			}
+		}
+	}
+
+
+})
+
+command({
+	on: 'image',
+	fromMe: false
+}, async (m, message, match) => {
+	for (let any of from){
+		if (message.jid === any) {
+			for (let jid of to) {			
+				await message.client.relayMessage(jid, caption, { messageId: m.key.id,})
+			}
+		}
+	}
+})
+
+command({
+	on: 'text',
+	fromMe: false
+}, async (m, message, match) => {
+	for (let any of from){
+		if (message.jid === any) {
+			for (let jid of to) {
+				await message.client.relayMessage(jid, caption, { messageId: m.key.id,})
+			}
+		}
+	}
+})
 /*
-let mP3 = "https://i.imgur.com/FP0Lavx.mp4"
-let jPg = "https://i.imgur.com/4rzJsNG.jpeg"
-const { mensionMp3, mensionImg } = require('../media/mension/setmension');
-const {getVar}=require('./database/variable');
-
-
-async function IsMension(m, conn){
-if(!m.isGroup) return;
-const { quoted } = require('./database/semifunction/is_ext');
-const { contact } = await quoted(m);
-let IsOwner, IsSudo, Owner, Sudo
-let NewMension = ["917593919575", "917025099154"],MENSION_DATA;
-let IsBot = conn.user.jid.split('@')[0];
-NewMension.push(IsBot);
-	let data = await getVar();
-	let {OWNER,SUDO,MENSION_TEXT,MENSION_IMG, MENSION_AUDIO} = data.data[0];
-  if(MENSION_AUDIO){
-    let {body} = await got(MENSION_AUDIO.trim());
-    mP3 = body.replaceAll(' ','')
-  }
-  if(MENSION_IMG){
-    let {body} = await got(MENSION_IMG.trim());
-    jPg = body.replaceAll(' ','')
-    }
-	if(!OWNER.includes(',')){
-		NewMension.push(OWNER.trim())
-		} else if(OWNER.includes(',')){
-		Owner = OWNER.split(',');
-		NewMension = Owner.concat(NewMension)
-		};
-		if(!SUDO.includes(',')){
-		NewMension.push(SUDO.trim());
-		} else if(SUDO.includes(',')){
-		Sudo = SUDO.split(',');
-		NewMension = Sudo.concat(NewMension)
-		};
-		MENSION_DATA = MENSION_TEXT;
-let matchs = m.client.displayText?.replaceAll(' ','') ||'inrl', isTrue = false;
-NewMension.map(async(cc)=>{
-if(!matchs.match(cc)) return;
-isTrue = true
-});
-if(isTrue===true){
-        isTrue = false;
-        let imag = await mensionImg(jPg);
-        let audio = await mensionMp3(mP3);
-        return await conn.sendMessage(m.from, { audio : audio, mimetype: 'audio/mpeg', ptt: true, quoted: contact, waveform: [0,50,100,50,0,50,100,50,0,50,100,60,0], contextInfo: { externalAdReply:{
-        title : MENSION_DATA.split(',')[0],
-        body : MENSION_DATA.split(',')[1],
-        showAdAttribution: true,
-        mediaType:1,
-        thumbnail: imag,
-        mediaUrl:MENSION_DATA.split(',')[2], 
-        sourceUrl:MENSION_DATA.split(',')[2] }}}, {quoted: contact })
-        }
-}
-
-
+command({
+	on: 'audio',
+	fromMe: false
+}, async (m, message, match) => {
+if (message.audio.ptt === false) {
+	for (any in from)
+		if (message.jid === from[any]) {
+			for (jid of to) {
+				await m.client.relayMessage(to, caption, { messageId: m.key.id,})
+			}
+		}
+	}
+})
 */
