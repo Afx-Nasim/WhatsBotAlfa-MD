@@ -1,4 +1,4 @@
-# 𝒞𝑜𝓂𝒾𝓃𝑔 𝒮𝑜𝑜𝓃...
+# Just Here!
 
 
 <!--
@@ -17,7 +17,7 @@
 
 
 <p align="left">
-  <a href="https://github.com/alien-Alfa"><img title="Support" src="https://img.shields.io/badge/maintained-yes-cyan.svg?style=for-the-badge&logo=xcode" /></a>
+  <a href="https://github.com/alien-Alfa"><img title="Support" src="https://img.shields.io/badge/maintained-working-yellow.svg?style=for-the-badge&logo=xcode" /></a>
 </p>
 
 
@@ -27,11 +27,11 @@
 
 <br>
 <p align="left">
-  <a href="https://github.com/alien-Alfa"><img title="Support" src="https://img.shields.io/badge/current%20Status-running%20with%20bugs!-orange.svg?style=for-the-badge&logo=xcode" /></a>
+  <a href="https://github.com/alien-Alfa"><img title="Support" src="https://img.shields.io/badge/current%20Status-Maintanance%20Mode!-orange.svg?style=for-the-badge&logo=xcode" /></a>
 </p>
 <br>
 <p align="left">
-  <a href="https://github.com/alien-Alfa"><img title="Support" src="https://img.shields.io/badge/next%20update-undefined!-green.svg?style=for-the-badge&logo=xcode" /></a>
+  <a href="https://github.com/alien-Alfa"><img title="Support" src="https://img.shields.io/badge/release%20date-January!-green.svg?style=for-the-badge&logo=xcode" /></a>
 </p>
 
 
@@ -42,7 +42,7 @@
 
 
 <p align="center">
-  <a href="https://www.instagram.com/_the_soul_rider_/"><img src="https://github.com/Alien-alfa/Alien-alfa/blob/beta/img/Bungee%20Shades.png?raw=true" width="500" alt="Profile"/> </a>
+  <a href="https://www.instagram.com/_the_soul_rider_/"><img src="https://github.com/Alien-Alfa/WhatsBotAlfa-MD/assets/64305844/3e155992-f631-4dee-b347-218914c8a8f2" width="500" alt="Profile"/> </a>
 </p>
 
 <p align="center">
@@ -60,7 +60,7 @@
 </p>
 
 <p align="center">
-<a href="https://app.fossa.com/projects/git%2Bgithub.com%2FAlien-alfa%2FWhatsBotAlfa-MD?ref=badge_small" alt="FOSSA Status"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2FAlien-alfa%2FWhatsBotAlfa-MD.svg?type=small"/></a>
+<a href="https://www.digitalocean.com/?refcode=57c76f5e35cf&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge"><img src="https://web-platforms.sfo2.digitaloceanspaces.com/WWW/Badge%203.svg" alt="DigitalOcean Referral Badge" /></a>
 </p>
 
 <p align="center">
@@ -95,8 +95,9 @@
   <a href="https://github.com/Alien-Alfa/WhatsBotAlfa-MD/fork"><img title="ＡＬＩＥＮ ＡＬＦＡ" src="https://github.com/Alien-alfa/Alien-alfa/blob/beta/img/pngegg.png?raw=true" width="200"></a>
 <br>
 # `Scan QR Code For Session`
- 
-<a href="https://qr-new.vercel.app"><img title="ＡＬＩＥＮ ＡＬＦＡ" src="https://repl.it/badge/github/quiec/whatsasena" width="300"></a>
+
+# `❗SCAN QR❗`
+ <a href="https://apex-alien-alfa.vercel.app"><img title="ＡＬＩＥＮ ＡＬＦＡ" src="https://repl.it/badge/github/quiec/whatsasena" width="300"></a>
   <br><br><br>
 # `Change Session In Github`
 
@@ -254,7 +255,7 @@ If you are concerned about security, you can install it on your own computer. If
 
 ### ⚠️ Warning! 
 ```
-Due to Userbot; Your WhatsApp account may be banned.
+Due to Bot; Your WhatsApp account may be banned.
 This is an open source project, you are responsible for everything you do. 
 Absolutely, Asena executives do not accept responsibility.
 By establishing the Asena, you are deemed to have accepted these responsibilities.

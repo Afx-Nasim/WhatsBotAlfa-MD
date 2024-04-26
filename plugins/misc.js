@@ -1,44 +1,59 @@
-const { command, sleep, isPrivate, getJson, cloudspace } = require("../lib/");
-
-command({
+const { command, sleep, isPrivate, isUrl, Bitly } = require("../lib/");
+command(
+  {
     pattern: "getqr ?(.*)",
-    fromMe: isPrivate,
+    fromMe: isPrivate,  
     desc: "Get connection QR",
-    type: "tool",
-  }, async (message, match, m) => {
-    message.treply("```Processing QR```")
+    type: "misc",
+  },
+  async (message, match) => {
+    try{
     for (let index = 0; index < 5; index++) {
-      await sleep(30 * 1000);
-      await message.sendFromUrl("https://cheeryfinedesign.alien-alfa.repl.co", {
-        caption: "Scan within 30 seconds",
+      await sleep(10 * 1000);
+      await message.sendFromUrl("https://apex-alien-alfa.koyeb.app/qr", {
+        caption: "Scan within 10 seconds",
       });
     }
-    return await message.treply("Your session is OVER");
+    return await message.reply("Your session is OVER");
+  } catch (error) {
+    console.error("[Error]:", error);
+  }
   }
 );
 
-  
+command(
+  {
+    pattern: "bitly ?(.*)",
+    fromMe: isPrivate,  
+    desc: "Converts Url to bitly",
+    type: "tool",
+  },
+  async (message, match) => {
+    try{
+    match = match||message.reply_message.text
+    if(!match) return await message.reply('_Reply to a url or enter a url_')
+    if(!isUrl(match)) return await message.reply('_Not a url_')
+    let short = await Bitly(match)
+    return await message.reply(short.link)
+  } catch (error) {
+    console.error("[Error]:", error);
+  }
+  }
+);
 
-command({
-  pattern: "gpt",
-  fromMe: isPrivate,
-  desc: "ChatGPT",
-  type: "misc",
-
-},
-async (message, match, m) => {
-  if (!match) return await message.sendMessage("_Ask Somthing to chatGPT_");
-  let response  = await getJson(`https://api-viper-x0.vercel.app/api/openai?openaiapikey=${process.env.chatGPT_API}&text=${match}`)
-  let rezi = await response.data.text.toString().replace("\n\n","")
-  return await message.reply(rezi);
-})
-
-command({
-  pattern: "sync",
-  fromMe: true,
-  desc: "Sync Databade to server",
-  type: "misc",
-},
-async (message, match, m) => {
-  cloudspace()
-})  
+command(
+  {
+    pattern: "restart ?(.*)",
+    fromMe: true,  
+    desc: "restart the bot",
+    type: "misc",
+  },
+  async (message, match) => {
+    try{
+     await message.reply("Restarting...");
+     return await process.send("reset")
+    } catch (error) {
+      console.error("[Error]:", error);
+    }
+  }
+);

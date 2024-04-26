@@ -5,19 +5,17 @@ const {
   webp2mp4,
   isUrl,
   isPrivate,
-  getJson,
-  getUrl,
-  isIgUrl,
-  findMusic,
+  asMp3
 } = require("../lib/");
 const { yta, ytIdRegex, ytv } = require("../lib/yotube");
 const { search } = require("yt-search");
 const { toAudio } = require("../lib/media");
 let gis = require("g-i-s");
 const { AddMp3Meta } = require("../lib");
-
+const ffmpeg = require("../lib/myffmpeg");
 const jimp = require("jimp");
 const QRReader = require("qrcode-reader");
+const { RMBG_KEY } = require("../config");
 let { unlink } = require("fs/promises");
 const got = require("got");
 const FormData = require("form-data");
@@ -25,17 +23,51 @@ const stream = require("stream");
 const { promisify } = require("util");
 const pipeline = promisify(stream.pipeline);
 const fs = require("fs");
+const googleTTS = require('google-tts-api');
+const { spotifydl } = require('../lib/spotify')
 
+command(
+  {
+    pattern: "qr ?(.*)",
+    fromMe: isPrivate,  
+    desc: "Read/Write Qr.",
+    type: "Tool",
+  },
+  async (message, match) => {
+    try{
+    match = match || message.reply_message.text;
+    if (match) {
+      let buff = await qrcode(match);
+      return await message.sendMessage(buff, {}, "image");
+    } else if (!message.reply_message || !message.reply_message.image)
+      return await message.sendMessage(
+        "*Example : qr test*\n*Reply to a qr image.*"
+      );
 
-
+    const { bitmap } = await jimp.read(
+      await message.reply_message.downloadMediaMessage()
+    );
+    const qr = new QRReader();
+    qr.callback = (err, value) =>
+      message.sendMessage(err ?? value.result, { quoted: message.data });
+    qr.decode(bitmap);
+    return await message.reply(participants);
+    } catch (error) {
+      console.error("[Error]:", error);
+    }
+    
+  }
+);
 
 Function(
   {
-    pattern: "img",
-    fromMe: isPrivate,
+    pattern: "img ?(.*)",
+    fromMe: isPrivate,  
     desc: "Google Image search",
     type: "downloader",
-  }, async (message, match, m) => {
+  },
+  async (message, match) => {
+    try{
     if (!match) return await message.sendMessage("Enter Search Term,number");
     let [query, amount] = match.split(",");
     let result = await gimage(query, amount);
@@ -45,6 +77,11 @@ Function(
     for (let i of result) {
       await message.sendFromUrl(i);
     }
+    return await message.reply(participants);
+    } catch (error) {
+      console.error("[Error]:", error);
+    }
+    
   }
 );
 
@@ -65,31 +102,81 @@ async function gimage(query, amount = 5) {
 }
 
 
-command({
-    pattern: "photo",
-    fromMe: isPrivate,
+
+command(
+  {
+    pattern: "removebg ?(.*)",
+    fromMe: isPrivate,  
+    desc: "removes background of an image",
+  },
+  async (message, match) => {
+    try{
+    if (!message.reply_message || !message.reply_message.image)
+      return await message.reply("_Reply to a photo_");
+    if (RMBG_KEY === false)
+      return await message.reply(
+        `_Get a new api key from https://www.remove.bg/api_\n_set it via_\n_setvar RMBG_KEY: api key_`
+      );
+
+    await message.reply("_Removing Background_");
+    var location = await message.reply_message.downloadMediaMessage();
+
+    var form = new FormData();
+    form.append("image_file", fs.createReadStream(location));
+    form.append("size", "auto");
+
+    var rbg = await got.stream.post("https://api.remove.bg/v1.0/removebg", {
+      body: form,
+      headers: {
+        "X-Api-Key": RMBG_KEY,
+      },
+    });
+
+    await pipeline(rbg, fs.createWriteStream("rbg.png"));
+
+    await message.sendMessage(fs.readFileSync("rbg.png"), {}, "image");
+    await unlink(location);
+    return await unlink("rbg.png");
+    return await message.reply(participants);
+    } catch (error) {
+      console.error("[Error]:", error);
+    }
+    
+  }
+);
+
+command(
+  {
+    pattern: "photo ?(.*)",
+    fromMe: isPrivate,  
     desc: "Changes sticker to Photo",
     type: "converter",
   },
   async (message, match, m) => {
+    try{
     if (!message.reply_message)
       return await message.reply("_Reply to a sticker_");
     if (message.reply_message.mtype !== "stickerMessage")
       return await message.reply("_Not a sticker_");
     let buff = await m.quoted.download();
     return await message.sendMessage(buff, {}, "image");
+    return await message.reply(participants);
+    } catch (error) {
+      console.error("[Error]:", error);
+    }
+    
   }
 );
 
-
-
-command({
-    pattern: "mp4",
-    fromMe: isPrivate,
+command(
+  {
+    pattern: "mp4 ?(.*)",
+    fromMe: isPrivate,  
     desc: "Changes sticker to Video",
     type: "converter",
   },
   async (message, match, m) => {
+    try{
     if (!message.reply_message)
       return await message.reply("_Reply to a sticker_");
     if (message.reply_message.mtype !== "stickerMessage")
@@ -97,130 +184,49 @@ command({
     let buff = await m.quoted.download();
     let buffer = await webp2mp4(buff);
     return await message.sendMessage(buffer, {}, "video");
-  }
-);
-
-
-
-command(
-  {
-    pattern: "song",
-    fromMe: isPrivate,
-    desc: "Downloads Song",
-    type: "downloader",
-  },
-  async (message, match) => {
-    if (!(match || message.reply_message.text))
-      return await message.reply("_Enter Song Name_");
-    match = match || message.reply_message.text;
-    if (ytIdRegex.test(match)) {
-      yta(match.trim()).then(async ({ dl_link, title, thumb }) => {
-        let buff = await AddMp3Meta(dl_link, thumb, {
-          title,
-        });
-        message.sendMessage(
-          buff,
-          { mimetype: "audio/mpeg", quoted: message.data },
-          "audio"
-        );
-      });
+    return await message.reply(participants);
+    } catch (error) {
+      console.error("[Error]:", error);
     }
-    search(match + "song").then(async ({ videos }) => {
-      await message.reply(`_Downloading ${videos[0].title}_`);
-      yta(videos[0].url).then(async ({ dl_link, title, thumb }) => {
-        let buff = await AddMp3Meta(dl_link, thumb, {
-          title,
-          artist: [videos[0].author],
-        });
-        message.sendMessage(
-          buff,
-          { mimetype: "audio/mpeg", quoted: message.data },
-          "audio"
-        );
-      });
-    });
-  }
-);
-
-command(
-  {
-    pattern: "video",
-    fromMe: isPrivate,
-    desc: "Downloads video",
-    type: "downloader",
-  },
-  async (message, match) => {
-    if (!match || !message.reply_message.text)
-      return await message.reply("_Enter Video Name_");
-    match = match || message.reply_message.text;
-    if (ytIdRegex.test(match)) {
-      ytv(match.trim()).then(({ dl_link, title }) => {
-        message.sendFromUrl(dl_link, { filename: title });
-      });
-    }
-    search(match).then(async ({ videos }) => {
-      await message.reply(`_Downloading ${videos[0].title}_`);
-      ytv(videos[0].url).then(({ dl_link, title }) => {
-        message.sendFromUrl(dl_link, { filename: title, quoted: message });
-      });
-    });
+    
   }
 );
 
 
 
+command ({
+pattern: "2tts",
+fromMe: isPrivate,  
+desc: "google-tts",
+type: "tool"
+},
+async (message,match) => {
+  try{
+	if(!match) return await message.reply("waiting for a query")
+let url = await googleTTS.getAudioUrl(match, {
+  lang: 'en',
+  slow: false,
+  host: 'https://translate.google.com',
+});
 
 
-command({
-    pattern: "mp3",
-    fromMe: isPrivate,
-    desc: "converts video/voice to mp3",
-    type: "downloader",
-  },
-  async (message, match, m) => {
-    //if(message.reply_message.text) return await message.reply('_Enter Video Name_')
-    let buff = await m.quoted.download();
-    buff = await toAudio(buff, "mp3");
-    return await message.sendMessage(buff, { mimetype: "audio/mpeg" }, "audio");
-  }
-);
-
-
-command({
-  pattern: "load",
-  fromMe: isPrivate,
-  desc: "Downloads from a direct link",
-  type: "downloader",
-}, async (message, match, m) => {
-  match = match || message.reply_message.text;
-  if (!match)
-    return message.reply(
-      "_Send a direct media link_\n_*link;caption(optional)*_"
-    );
-  try {
-    let url = match.split(";")[0];
-    let options = {};
-    options.caption = match.split(";")[1];
-
-    if (isUrl(url)) {
-      message.sendDocFromUrl(url, options);
-    } else {
-      message.reply("_Not a URL_");
-    }
-  } catch (e) {
-    console.log(e);
-    message.reply("_No content found_");
-  }
+return message.client.sendMessage(message.jid,{audio: {url: url}, mimetype: "audio/mpeg", fileName:"Aurora-Project-Tts.m4a"});
+return await message.reply(participants);
+} catch (error) {
+  console.error("[Error]:", error);
 }
-);
 
+});
 
-command({
-    pattern: "fetch",
-    fromMe: isPrivate,
+command(
+  {
+    pattern: "fetch ?(.*)",
+    fromMe: isPrivate,  
     desc: "Downloads from a direct link",
     type: "downloader",
-  }, async (message, match, m) => {
+  },
+  async (message, match) => {
+    try{
     match = match || message.reply_message.text;
     if (!match)
       return message.reply(
@@ -240,16 +246,22 @@ command({
       console.log(e);
       message.reply("_No content found_");
     }
+    return await message.reply(participants);
+    } catch (error) {
+      console.error("[Error]:", error);
+    }
+    
   }
 );
-
-
-command({
-    pattern: ["yts"],
-    fromMe: isPrivate,
+command(
+  {
+    pattern: "yts ?(.*)",
+    fromMe: isPrivate,  
     desc: "Search Youtube",
-    type: "search",
-  }, async (message, match, m) => {
+    type: "Search",
+  },
+  async (message, match) => {
+    try{
     if (!match) return await message.reply("_Enter a search term_");
     let rows = [];
     search(match).then(async ({ videos }) => {
@@ -275,16 +287,22 @@ command({
         ],
       });
     });
+    return await message.reply(participants);
+    } catch (error) {
+      console.error("[Error]:", error);
+    }
+    
   }
 );
 
-
-
-command({
-    pattern: "ytv",
-    fromMe: isPrivate,
+command(
+  {
+    pattern: "ytv ?(.*)",
+    fromMe: isPrivate,  
     dontAddCommandList: true,
-  }, async (message, match, m) => {
+  },
+  async (message, match) => {
+    try{
     match = match || message.reply_message.text;
     if (!match) return await message.reply("_Enter a URL_");
 
@@ -296,16 +314,22 @@ command({
         quoted: message,
       });
     });
+    return await message.reply(participants);
+    } catch (error) {
+      console.error("[Error]:", error);
+    }
+    
   }
 );
 
-
-
-command({
-    pattern: ["yta","play"],
-    fromMe: isPrivate,
+command(
+  {
+    pattern: "yta ?(.*)",
+    fromMe: isPrivate,  
     dontAddCommandList: true,
-  }, async (message, match, m) => {
+  },
+  async (message, match) => {
+    try{
     match = match || message.reply_message.text;
     if (!match) return await message.reply("_Enter a URL_");
     if (!ytIdRegex.test(match)) return await message.reply("_Invalid Url_");
@@ -320,5 +344,64 @@ command({
         "audio"
       );
     });
+    return await message.reply(participants);
+    } catch (error) {
+      console.error("[Error]:", error);
+    }
+    
   }
-);
+); 
+
+command(
+  {
+    pattern: "spotify ?(.*)",
+    fromMe: isPrivate,  
+    desc: "Spotify song Downloader",
+    type: "downloader",
+  },
+  async (message, match) => {
+    try{
+
+{
+if (!match) return message.client.sendMessage(message.jid,{text: "Please give me a valid link"});
+  const audioSpotify = await spotifydl(match.trim()).catch((err) => {
+    console.error(err)
+    return message.client.sendMessage(message.jid, err.toString())
+  })
+
+  if (spotifydl.error) return message.client.sendMessage(message.jid,{text:  "Error Fetching: ${match.trim()}. Check if the url is valid and try again"})
+  let { key } =  await message.client.sendMessage(
+    message.jid,
+    {
+        image: audioSpotify.coverimage,
+        caption: '```Downloading has started!```'
+    }
+)
+  const caption = "```Title: "+`${audioSpotify.data.name || ''}\nArtists: ${(audioSpotify.data.artists || []).join(', ')}\nAlbum: ${audioSpotify.data.album_name}\nRelease Date: ${audioSpotify.data.release_date || ''}`+"```"
+
+await await message.client.sendMessage(
+  message.jid,
+  {
+      image: audioSpotify.coverimage,
+      caption: caption,
+      edit: key
+  }
+)
+
+  return await message.client.sendMessage(
+      message.jid,
+      {
+          audio: audioSpotify.audio,
+          mimetype: 'audio/mpeg',
+          fileName: audioSpotify.data.name + '.mp3',
+          ptt: true
+      }
+  )
+
+}
+return await message.reply(participants);
+} catch (error) {
+  console.error("[Error]:", error);
+}
+
+})

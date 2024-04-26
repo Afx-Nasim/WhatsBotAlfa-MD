@@ -1,12 +1,8 @@
-const { command,tiny } = require("../lib/");
-const {
-  setMessage,
-  getMessage,
-  delMessage,
-  getStatus,
-  toggleStatus,
-} = require("../lib/database/greetings");
+/*
 
+const { command } = require("../lib");
+const { setMessage, getMessage, delMessage, getStatus, toggleStatus } =
+  require("../database").Greetings;
 
 command(
   {
@@ -15,58 +11,54 @@ command(
     desc: "description",
     type: "group",
   },
-  async (message, match, m) => {
-
-    let {prefix} = message
+  async (message, match) => {
+    try{
     if (!message.isGroup) return;
+    let { prefix } = message;
     let status = await getStatus(message.jid, "welcome");
-    let toggler = status ? "off" : "on";
     let stat = status ? "on" : "off";
+
     if (!match) {
-      return await message.client.sendMessage(message.jid, {
-        text: tiny("Welcome manager"),
-        footer:
-          (await (await message.client.groupMetadata(message.jid)).subject) +
-          `\nstatus : ${stat}`,
-        buttons: [
-          {
-            buttonId: prefix + "welcome get",
-            buttonText: { displayText: "GET" },
-          },
-          {
-            buttonId: prefix + "welcome " + toggler,
-            buttonText: { displayText: toggler.toUpperCase() },
-          },
-        ],
-      });
+      let replyMsg = `Welcome manager\n\nGroup: ${
+        (await message.client.groupMetadata(message.jid)).subject
+      }\nStatus: ${stat}\n\nAvailable Actions:\n\n- ${prefix}welcome get: Get the welcome message\n- ${prefix}welcome on: Enable welcome message\n- ${prefix}welcome off: Disable welcome message\n- ${prefix}welcome delete: Delete the welcome message`;
+
+      return await message.reply(replyMsg);
     }
+
     if (match === "get") {
       let msg = await getMessage(message.jid, "welcome");
-      if (!msg) return await message.treply("_There is no welcome set_");
-      return message.treply(msg.message);
+      if (!msg) return await message.reply("_There is no welcome set_");
+      return message.reply(msg.message);
     }
+
     if (match === "on") {
       let msg = await getMessage(message.jid, "welcome");
       if (!msg)
-        return await message.treply("_There is no welcome message to enable_");
-      if (status) return await message.treply("_Welcome already enabled_");
+        return await message.reply("_There is no welcome message to enable_");
+      if (status) return await message.reply("_Welcome already enabled_");
       await toggleStatus(message.jid);
-      return await message.treply("_Welcome enabled_");
+      return await message.reply("_Welcome enabled_");
     }
+
     if (match === "off") {
-      if (!status) return await message.treply("_Welcome already disabled_");
+      if (!status) return await message.reply("_Welcome already disabled_");
       await toggleStatus(message.jid, "welcome");
-      return await message.treply("_Welcome disabled_");
+      return await message.reply("_Welcome disabled_");
     }
+
     if (match == "delete") {
       await delMessage(message.jid, "welcome");
-      return await message.treply("_Welcome deleted succesfully_");
+      return await message.reply("_Welcome deleted successfully_");
     }
     await setMessage(message.jid, "welcome", match);
-    return await message.treply("_Welcome set succesfully_");
+    return await message.reply("_Welcome set successfully_");
+      } catch (error) {
+        console.error("[Error]:", error);
+      }
+
   }
 );
-
 
 command(
   {
@@ -75,47 +67,47 @@ command(
     desc: "description",
     type: "group",
   },
-  async (message, match, m) => {
+  async (message, match) => {
+    try{
     if (!message.isGroup) return;
     let status = await getStatus(message.jid, "goodbye");
-    let toggler = status ? "off" : "on";
     let stat = status ? "on" : "off";
+    let replyMsg = `Goodbye manager\n\nGroup: ${
+      (await message.client.groupMetadata(message.jid)).subject
+    }\nStatus: ${stat}\n\nAvailable Actions:\n\n- goodbye get: Get the goodbye message\n- goodbye on: Enable goodbye message\n- goodbye off: Disable goodbye message\n- goodbye delete: Delete the goodbye message`;
+
     if (!match) {
-      return await message.client.sendMessage(message.jid, {
-        text: tiny("Goodbye manager"),
-        footer:
-          (await (await message.client.groupMetadata(message.jid)).subject) +
-          `\nstatus : ${stat}`,
-        buttons: [
-          {
-            buttonId: prefix + "goodbye get",
-            buttonText: { displayText: "GET" },
-          },
-          {
-            buttonId: prefix + "goodbye " + toggler,
-            buttonText: { displayText: toggler.toUpperCase() },
-          },
-        ],
-      });
+      return await message.reply(replyMsg);
     }
+
     if (match === "get") {
       let msg = await getMessage(message.jid, "goodbye");
-      if (!msg) return await message.treply("_There is no goodbye set_");
-      return message.treply(msg.message);
+      if (!msg) return await message.reply("_There is no goodbye set_");
+      return message.reply(msg.message);
     }
+
     if (match === "on") {
       await toggleStatus(message.jid, "goodbye");
-      return await message.treply("_Goodbye enabled_");
+      return await message.reply("_Goodbye enabled_");
     }
+
     if (match === "off") {
       await toggleStatus(message.jid);
-      return await message.treply("_Goodbye disabled_");
+      return await message.reply("_Goodbye disabled_");
     }
-    if (match == "delete") {
+
+    if (match === "delete") {
       await delMessage(message.jid, "goodbye");
-      return await message.treply("_Goodbye deleted succesfully_");
+      return await message.reply("_Goodbye deleted successfully_");
     }
+
     await setMessage(message.jid, "goodbye", match);
-    return await message.treply("_Goodbye set succesfully_");
+    return await message.reply("_Goodbye set successfully_");
+      } catch (error) {
+        console.error("[Error]:", error);
+      }
+
   }
 );
+
+*/
